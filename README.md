@@ -1,12 +1,15 @@
 # Clasificación de imágenes MRI mediante CNN utilizando OASIS
 
+
 ## 1. Descripción del proyecto
 
-Este proyecto implementa un modelo de **Deep Learning basado en una Convolutional Neural Network (CNN)** para clasificar imágenes de resonancia magnética cerebral asociadas a diferentes categorías relacionadas con la enfermedad de Alzheimer.
+Este proyecto implementa un modelo de **Deep Learning basado en una Convolutional Neural Network (CNN)** para clasificar imágenes de resonancia magnética cerebral en diferentes categorías relacionadas con la enfermedad de Alzheimer.
 
-El modelo fue desarrollado utilizando el dataset **OASIS Alzheimer’s Detection** y busca explorar el proceso completo de construcción y evaluación de un modelo de clasificación de imágenes, desde la preparación de los datos hasta el análisis de sus resultados.
+Para el desarrollo se utiliza el dataset [OASIS Alzheimer’s Detection](https://www.kaggle.com/datasets/ninadaithal/imagesoasis/data), disponible públicamente en Kaggle.
 
-Uno de los principales objetivos del proyecto es priorizar una metodología de evaluación que permita obtener resultados más representativos sobre pacientes no utilizados durante el entrenamiento, en lugar de centrarse únicamente en maximizar la precisión obtenida sobre el dataset.
+El proyecto aborda el proceso completo de construcción de un modelo de clasificación de imágenes, incluyendo la preparación del dataset, división de los datos, entrenamiento de la CNN y evaluación de sus resultados.
+
+Además de buscar un modelo con buenos resultados de clasificación, se presta especial atención a la **calidad de la metodología de evaluación**, considerando las características y limitaciones propias del dataset.
 
 ---
 
@@ -19,9 +22,9 @@ El objetivo principal es desarrollar y evaluar una CNN capaz de clasificar imág
 - **Mild Dementia**
 - **Moderate Dementia**
 
-Además de construir el modelo, el proyecto busca analizar las dificultades presentes en este tipo de datasets, especialmente aquellas relacionadas con el desbalance de clases y la presencia de múltiples imágenes correspondientes a un mismo paciente.
+El proyecto también busca analizar cómo las características del dataset pueden afectar los resultados de un modelo de Deep Learning, especialmente cuando existen múltiples imágenes correspondientes a un mismo paciente y una distribución desigual entre las clases.
 
-Por este motivo, se implementó una división de los datos basada en pacientes, evitando que imágenes pertenecientes al mismo paciente sean utilizadas simultáneamente en los conjuntos de entrenamiento, validación y test.
+Por este motivo, se utiliza una metodología de división basada en pacientes, buscando evitar que imágenes pertenecientes al mismo paciente aparezcan simultáneamente en los conjuntos de entrenamiento, validación y test.
 
 ---
 
@@ -29,46 +32,54 @@ Por este motivo, se implementó una división de los datos basada en pacientes, 
 
 ### 3.1. OASIS Alzheimer’s Detection
 
-El proyecto utiliza el dataset **OASIS Alzheimer’s Detection**, un conjunto de imágenes MRI utilizado para tareas de clasificación relacionadas con la enfermedad de Alzheimer.
+El dataset utilizado es [OASIS Alzheimer’s Detection](https://www.kaggle.com/datasets/ninadaithal/imagesoasis/data), disponible en Kaggle y basado en imágenes de resonancia magnética cerebral.
 
-El dataset contiene imágenes organizadas en cuatro categorías:
+El conjunto utilizado contiene aproximadamente **86.437 imágenes**, distribuidas entre cuatro categorías:
 
-| Clase | Etiqueta |
-|---|---:|
-| Non Demented | 0 |
-| Very Mild Dementia | 1 |
-| Mild Dementia | 2 |
-| Moderate Dementia | 3 |
+| Clase | Imágenes | Pacientes | Promedio de imágenes por paciente |
+|---|---:|---:|---:|
+| Non Demented | 67.222 | 266 | 252,7 |
+| Very mild Dementia | 13.725 | 58 | 236,6 |
+| Mild Dementia | 5.002 | 21 | 238,2 |
+| Moderate Dementia | 488 | 2 | 244,0 |
+| **Total** | **86.437** | **347** | — |
 
-Las imágenes son procesadas y redimensionadas a **128 × 128 píxeles**, manteniendo tres canales de color (RGB), antes de ser utilizadas por la CNN.
+Esta distribución muestra una diferencia considerable tanto en la cantidad de imágenes como en la cantidad de pacientes disponibles para cada categoría.
 
-### 3.2. Origen y características
+### 3.2. Características de las imágenes
 
-El dataset utilizado en este proyecto corresponde a una versión disponible públicamente a través de **Kaggle**, basada en datos de OASIS (*Open Access Series of Imaging Studies*).
+Las imágenes originales utilizadas por el dataset tienen una resolución de **496 × 248 píxeles**.
 
-Una característica importante del dataset es que contiene múltiples imágenes correspondientes a un mismo paciente. Esto significa que las imágenes no pueden considerarse completamente independientes entre sí.
+Para reducir el coste computacional durante el entrenamiento, las imágenes son convertidas a RGB y redimensionadas a **128 × 128 píxeles** antes de ser utilizadas por la CNN.
 
-Esta característica presenta un riesgo importante durante la división de los datos: si imágenes del mismo paciente aparecen tanto en entrenamiento como en test, el modelo puede obtener resultados artificialmente elevados al encontrarse durante la evaluación con información relacionada con pacientes que ya estuvieron presentes durante el entrenamiento.
+Posteriormente, los valores de los píxeles son normalizados desde el rango original de **0–255** a un rango de **0–1**.
 
-### 3.3. Distribución de las clases
+### 3.3. Distribución de pacientes e imágenes
 
-Las clases no presentan una distribución uniforme en el dataset. Algunas categorías contienen una cantidad considerablemente mayor de imágenes y pacientes que otras.
+Una característica importante del dataset es que las imágenes no representan pacientes independientes. Un mismo paciente puede tener cientos de imágenes asociadas.
 
-Esta diferencia representa un problema de **desbalance de clases**, especialmente en categorías como `Moderate Dementia`, que cuentan con una cantidad muy reducida de pacientes en comparación con `Non Demented`.
+En el dataset utilizado se identificaron:
 
-En lugar de descartar grandes cantidades de imágenes para igualar artificialmente las clases, este proyecto conserva los datos disponibles y utiliza **Class Weights** durante el entrenamiento para reducir el impacto del desbalance.
+- **266 pacientes** en `Non Demented`.
+- **58 pacientes** en `Very mild Dementia`.
+- **21 pacientes** en `Mild Dementia`.
+- **2 pacientes** en `Moderate Dementia`.
+
+Por lo tanto, la cantidad de imágenes por clase no debe interpretarse directamente como cantidad de casos independientes. La diferencia entre **86.437 imágenes y 347 pacientes** es especialmente relevante para la metodología de evaluación utilizada posteriormente.
 
 ### 3.4. Limitaciones del dataset
 
-El dataset presenta varias características que deben considerarse al interpretar los resultados del modelo:
+El dataset presenta algunas características que deben tenerse en cuenta al interpretar los resultados:
 
-- Existe un número muy diferente de pacientes entre las distintas categorías.
-- Algunos pacientes poseen una gran cantidad de imágenes.
-- La clase `Moderate Dementia` cuenta con solamente dos pacientes identificados en el dataset utilizado.
-- La cantidad de imágenes no representa necesariamente la cantidad de pacientes.
-- Los resultados obtenidos sobre este dataset no implican necesariamente que el modelo pueda generalizar a imágenes provenientes de otros datasets o de entornos clínicos reales.
+- Existe un fuerte desbalance entre las clases.
+- La cantidad de pacientes varía considerablemente entre categorías.
+- `Moderate Dementia` dispone únicamente de **2 pacientes** en el conjunto utilizado.
+- Cada paciente puede aportar una gran cantidad de imágenes.
+- Las imágenes de un mismo paciente están relacionadas entre sí, por lo que una división aleatoria basada únicamente en imágenes puede producir una evaluación poco representativa.
 
-Estas características influyen directamente en la metodología utilizada posteriormente para dividir los datos y evaluar el modelo.
+Estas características influyen directamente en las decisiones tomadas para la preparación, división y evaluación de los datos.
+
+---
 
 ## 4. Preparación de los datos
 ### 4.1. Preprocesamiento de imágenes
@@ -77,14 +88,20 @@ Estas características influyen directamente en la metodología utilizada poster
 ### 4.4. Control de Data Leakage
 ### 4.5. Desbalance de clases
 
+---
+
 ## 5. Arquitectura de la CNN
 ### 5.1. Arquitectura utilizada
 ### 5.2. Configuración del modelo
+
+---
 
 ## 6. Entrenamiento
 ### 6.1. Parámetros de entrenamiento
 ### 6.2. Class Weights
 ### 6.3. Early Stopping
+
+---
 
 ## 7. Resultados
 ### 7.1. Curvas de entrenamiento
@@ -92,26 +109,40 @@ Estas características influyen directamente en la metodología utilizada poster
 ### 7.3. Classification Report
 ### 7.4. Matriz de Confusión
 
+---
+
 ## 8. Precisión y realismo del modelo
 ### 8.1. Resultados de otros enfoques
 ### 8.2. El problema de buscar únicamente mayor Accuracy
 ### 8.3. Decisiones tomadas en este proyecto
 ### 8.4. Evaluación sobre pacientes no vistos
 
+---
+
 ## 9. Limitaciones
 ### 9.1. Limitaciones del dataset
 ### 9.2. Limitaciones del modelo
 ### 9.3. Generalización
+
+---
 
 ## 10. Uso del proyecto
 ### 10.1. Instalación
 ### 10.2. Entrenamiento
 ### 10.3. Predicción
 
+---
+
 ## 11. Estructura del proyecto
+
+---
 
 ## 12. Trabajo futuro
 
+---
+
 ## 13. Conclusiones
+
+---
 
 ## 14. Referencias
