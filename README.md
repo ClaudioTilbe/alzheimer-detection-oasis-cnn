@@ -82,17 +82,225 @@ Estas características influyen directamente en las decisiones tomadas para la p
 ---
 
 ## 4. Preparación de los datos
+
+La preparación de los datos es una etapa fundamental del proyecto, ya que las características del dataset hacen que una división convencional basada únicamente en imágenes pueda generar resultados poco representativos.
+
+El procesamiento realizado contempla el **redimensionamiento y normalización de las imágenes**, la **identificación de pacientes a partir de los nombres de archivo**, la separación de los datos a nivel de paciente y el tratamiento del desbalance entre las clases.
+
+El objetivo es que el modelo sea evaluado sobre pacientes que no hayan sido utilizados durante su entrenamiento.
+
 ### 4.1. Preprocesamiento de imágenes
+
+Las imágenes originales del dataset tienen una resolución de **496 × 248 píxeles**.
+
+Antes de ser utilizadas por la CNN, cada imagen pasa por las siguientes transformaciones:
+
+1. Conversión a formato **RGB**.
+2. Redimensionamiento a **128 × 128 píxeles**.
+3. Conversión de la imagen a un arreglo de NumPy.
+4. Normalización de los valores de los píxeles al rango **0–1**.
+
+La normalización se realiza dividiendo los valores originales de los píxeles, que se encuentran en el rango `0–255`, entre `255`.
+
+De esta manera, las imágenes utilizadas por el modelo tienen una forma de entrada de:
+
+```text
+128 × 128 × 3
+```
+
+El redimensionamiento permite reducir significativamente el coste computacional del entrenamiento manteniendo una representación suficiente para el objetivo experimental del proyecto.
+
 ### 4.2. División por paciente
+
+Una de las decisiones metodológicas más importantes del proyecto es realizar la división de los datos **a nivel de paciente y no a nivel de imagen**.
+
+El nombre de archivo permite identificar al paciente al que pertenece cada imagen. Por ejemplo:
+
+```text
+OAS1_0028_MR1_mpr-1_100.jpg
+```
+
+En este caso, `0028` corresponde al identificador utilizado para identificar al paciente.
+
+Esto es importante porque un mismo paciente puede tener cientos de imágenes. Si las imágenes se dividieran aleatoriamente sin considerar esta relación, diferentes imágenes del mismo paciente podrían terminar en `train`, `validation` y `test`.
+
+El modelo podría entonces encontrarse durante la evaluación con imágenes relacionadas con pacientes que ya estuvieron presentes durante el entrenamiento.
+
+Para evitar esta situación, primero se agrupan las imágenes por paciente y posteriormente se realiza la división utilizando estos grupos.
+
 ### 4.3. Train, Validation y Test
+
+La división de los datos se realiza manteniendo separados los pacientes entre los diferentes conjuntos.
+
+Para las categorías `Non Demented`, `Very mild Dementia` y `Mild Dementia` se utiliza la siguiente estrategia:
+
+* **15 % de los pacientes** se reserva para `Test`.
+* Del grupo restante, **20 % de los pacientes** se reserva para `Validation`.
+* Los pacientes restantes se utilizan para `Train`.
+
+De esta forma, los conjuntos contienen pacientes independientes:
+
+```text
+Pacientes
+    │
+    ├── Train
+    │
+    ├── Validation
+    │
+    └── Test
+```
+
+El conjunto `Train` se utiliza para entrenar la CNN.
+
+El conjunto `Validation` se utiliza durante el entrenamiento para supervisar el comportamiento del modelo sobre datos que no participan directamente en la actualización de sus pesos.
+
+El conjunto `Test` se mantiene separado hasta la evaluación final y se utiliza para medir el comportamiento del modelo sobre pacientes que no fueron utilizados durante el entrenamiento.
+
+#### Caso particular: Moderate Dementia
+
+La categoría `Moderate Dementia` presenta una limitación importante: únicamente se identificaron **2 pacientes**.
+
+Debido a esta cantidad extremadamente reducida, no es posible realizar una división independiente de `Train`, `Validation` y `Test` para esta categoría manteniendo una separación significativa entre los pacientes.
+
+Por este motivo, se reserva:
+
+* Un paciente para `Train`.
+* Un paciente para `Test`.
+
+La categoría `Moderate Dementia` no dispone de un conjunto de `Validation` independiente.
+
+Esta limitación se tiene en cuenta posteriormente al interpretar los resultados del modelo.
+
 ### 4.4. Control de Data Leakage
+
+La separación por paciente se complementa con controles específicos para detectar posibles casos de **Data Leakage**.
+
+Después de realizar las divisiones se verifica que:
+
+* Ningún paciente aparezca simultáneamente en `Train` y `Validation`.
+* Ningún paciente aparezca simultáneamente en `Train` y `Test`.
+* Ningún paciente aparezca simultáneamente en `Validation` y `Test`.
+
+También se comprueba que un mismo identificador de paciente no aparezca asociado a diferentes categorías del dataset.
+
+El objetivo de estos controles es garantizar que la evaluación del modelo se realice sobre pacientes independientes de aquellos utilizados durante el entrenamiento.
+
+Esta metodología no elimina las limitaciones propias del dataset, pero reduce un riesgo importante de obtener métricas artificialmente elevadas debido a la presencia del mismo paciente en diferentes conjuntos.
+
 ### 4.5. Desbalance de clases
+
+El dataset presenta un desbalance considerable entre las cuatro categorías.
+
+La cantidad de imágenes disponibles por clase es:
+
+| Clase              | Imágenes |
+| ------------------ | -------: |
+| Non Demented       |   67.222 |
+| Very mild Dementia |   13.725 |
+| Mild Dementia      |    5.002 |
+| Moderate Dementia  |      488 |
+
+Por lo tanto, `Non Demented` representa una cantidad de imágenes considerablemente mayor que `Moderate Dementia`.
+
+En lugar de realizar un undersampling agresivo de las clases mayoritarias o un oversampling de las clases minoritarias, el entrenamiento utiliza **class weights**.
+
+Los pesos se calculan automáticamente a partir de la distribución de las clases mediante `compute_class_weight` de `scikit-learn`.
+
+Esto permite otorgar una mayor importancia a los errores cometidos sobre las clases con menor representación durante el entrenamiento, sin necesidad de duplicar físicamente las imágenes del dataset.
 
 ---
 
 ## 5. Arquitectura de la CNN
+
+El modelo utilizado es una **Convolutional Neural Network (CNN)** implementada utilizando **TensorFlow/Keras**.
+
+La arquitectura está orientada a la extracción progresiva de características visuales de las imágenes MRI.
+
+A medida que la información atraviesa las capas convolucionales, la red obtiene representaciones cada vez más abstractas de las imágenes hasta llegar a la clasificación final en las cuatro categorías.
+
 ### 5.1. Arquitectura utilizada
+
+La CNN recibe imágenes de entrada con dimensiones:
+
+```text
+128 × 128 × 3
+```
+
+La arquitectura está compuesta por cuatro bloques convolucionales, seguidos por una etapa de clasificación:
+
+```text
+Input
+  │
+  ├── Conv2D (32 filtros)
+  ├── BatchNormalization
+  └── MaxPooling2D
+        │
+        ├── Conv2D (64 filtros)
+        ├── BatchNormalization
+        └── MaxPooling2D
+              │
+              ├── Conv2D (128 filtros)
+              ├── BatchNormalization
+              └── MaxPooling2D
+                    │
+                    ├── Conv2D (256 filtros)
+                    ├── BatchNormalization
+                    └── MaxPooling2D
+                          │
+                          └── GlobalAveragePooling2D
+                                │
+                                ├── Dense (512)
+                                ├── Dropout (0.5)
+                                │
+                                └── Dense (4)
+                                      │
+                                    Softmax
+```
+
+Las capas convolucionales utilizan progresivamente una mayor cantidad de filtros:
+
+```text
+32 → 64 → 128 → 256
+```
+
+Esto permite que las primeras capas trabajen con características más simples, mientras que las capas posteriores pueden representar patrones visuales de mayor complejidad.
+
+`BatchNormalization` se utiliza después de las capas convolucionales para normalizar las activaciones y favorecer un entrenamiento más estable.
+
+`MaxPooling2D` reduce progresivamente las dimensiones espaciales de las características extraídas.
+
+Después del último bloque convolucional se utiliza `GlobalAveragePooling2D`, evitando la necesidad de transformar todo el mapa de características en un vector mediante `Flatten`.
+
+Finalmente, una capa `Dense` de 512 neuronas realiza la combinación de las características extraídas antes de la clasificación final.
+
+La última capa contiene **4 neuronas**, una por cada categoría del dataset, y utiliza `Softmax` para obtener las probabilidades asociadas a cada clase.
+
 ### 5.2. Configuración del modelo
+
+La configuración utilizada para compilar la CNN es:
+
+| Parámetro             | Configuración                   |
+| --------------------- | ------------------------------- |
+| Framework             | TensorFlow / Keras              |
+| Tamaño de entrada     | `128 × 128 × 3`                 |
+| Función de activación | ReLU                            |
+| Capa de salida        | Softmax                         |
+| Número de clases      | 4                               |
+| Optimizador           | Adam                            |
+| Learning Rate         | `0.001`                         |
+| Función de pérdida    | Sparse Categorical Crossentropy |
+| Métrica               | Accuracy                        |
+| Dropout               | `0.5`                           |
+
+La función de activación **ReLU** se utiliza en las capas convolucionales y en la capa `Dense` de 512 neuronas.
+
+La capa de salida utiliza **Softmax**, ya que el problema consiste en clasificar cada imagen en una de cuatro categorías mutuamente excluyentes.
+
+El optimizador **Adam** se configura con un learning rate de `0.001`.
+
+La función de pérdida utilizada es `Sparse Categorical Crossentropy`, adecuada para un problema de clasificación multiclase donde las etiquetas se representan mediante valores enteros.
+
+Además, durante el entrenamiento se incorporan los `class_weights` calculados previamente para compensar parcialmente el desbalance existente entre las categorías.
 
 ---
 
