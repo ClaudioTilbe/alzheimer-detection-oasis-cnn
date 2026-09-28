@@ -652,22 +652,318 @@ El modelo tampoco debe interpretarse como una herramienta de diagnóstico médic
 ---
 
 ## 10. Uso del proyecto
+
+El proyecto puede utilizarse tanto para revisar el proceso completo de entrenamiento de la CNN como para realizar predicciones utilizando un modelo previamente entrenado.
+
+El flujo general es:
+
+```text
+Dataset
+   │
+   ▼
+Preprocesamiento
+   │
+   ▼
+División por paciente
+   │
+   ▼
+Entrenamiento
+   │
+   ▼
+Modelo entrenado
+   │
+   ▼
+Predicción sobre una nueva imagen
+```
+
 ### 10.1. Instalación
+
+Para ejecutar el proyecto localmente se requiere tener instalado **Python** y las dependencias utilizadas por el modelo.
+
+Primero se debe clonar el repositorio:
+
+```bash
+git clone https://github.com/ClaudioTilbe/alzheimer-detection-oasis-cnn.git
+cd alzheimer-detection-oasis-cnn
+```
+
+Se recomienda utilizar un entorno virtual para mantener aisladas las dependencias del proyecto:
+
+```bash
+python -m venv .venv
+```
+
+En Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+Posteriormente se instalan las dependencias:
+
+```bash
+pip install -r requirements.txt
+```
+
+Las principales tecnologías utilizadas por el proyecto son:
+
+* Python
+* TensorFlow / Keras
+* NumPy
+* Pandas
+* scikit-learn
+* Matplotlib
+* Seaborn
+* Pillow
+
+El dataset OASIS utilizado en este proyecto debe descargarse desde [OASIS Alzheimer's Detection en Kaggle](https://www.kaggle.com/datasets/ninadaithal/imagesoasis/data).
+
+La ubicación del dataset debe configurarse de acuerdo con la estructura utilizada por los scripts del proyecto.
+
+> El dataset no se incluye dentro del repositorio debido a su tamaño.
+
 ### 10.2. Entrenamiento
+
+El entrenamiento puede realizarse utilizando `train.py`.
+
+```bash
+python src/train.py
+```
+
+El script realiza el proceso completo:
+
+1. Carga las imágenes del dataset.
+2. Identifica los pacientes a partir de los nombres de archivo.
+3. Agrupa las imágenes por paciente.
+4. Realiza la división de `Train`, `Validation` y `Test`.
+5. Preprocesa y normaliza las imágenes.
+6. Calcula los `Class Weights`.
+7. Construye la CNN.
+8. Entrena el modelo.
+9. Utiliza `Early Stopping`.
+10. Evalúa el modelo sobre `Test`.
+11. Genera las métricas y visualizaciones correspondientes.
+12. Guarda el modelo entrenado.
+
+El modelo resultante se almacena en:
+
+```text
+models/
+└── alzheimer_cnn.keras
+```
+
+Las gráficas y resultados generados durante la evaluación pueden almacenarse en:
+
+```text
+results/
+├── training_curves.png
+└── confusion_matrix.png
+```
+
+El notebook incluido en el proyecto contiene además el proceso desarrollado de manera interactiva y sirve como referencia para comprender cada etapa del experimento.
+
 ### 10.3. Predicción
+
+Una vez generado el modelo entrenado, puede utilizarse `predict.py` para realizar una predicción sobre una nueva imagen.
+
+Por ejemplo:
+
+```bash
+python src/predict.py ruta/a/la/imagen.jpg
+```
+
+El script carga el modelo previamente entrenado y realiza el mismo tipo de preprocesamiento utilizado durante el entrenamiento:
+
+```text
+Imagen
+   │
+   ▼
+RGB
+   │
+   ▼
+128 × 128
+   │
+   ▼
+Normalización 0–1
+   │
+   ▼
+CNN
+   │
+   ▼
+Probabilidades
+   │
+   ▼
+Clase predicha
+```
+
+La salida identifica la categoría con mayor probabilidad entre las cuatro clases utilizadas por el modelo:
+
+```text
+Non Demented
+Very mild Dementia
+Mild Dementia
+Moderate Dementia
+```
+
+Es importante que el preprocesamiento utilizado durante la predicción sea consistente con el utilizado durante el entrenamiento. Por este motivo, las nuevas imágenes también son convertidas a RGB, redimensionadas a `128 × 128` y normalizadas.
+
+> Las predicciones generadas por este proyecto tienen finalidad experimental y educativa. El modelo no constituye una herramienta de diagnóstico médico.
 
 ---
 
 ## 11. Estructura del proyecto
 
+La estructura del repositorio está organizada separando el análisis realizado en el notebook, los scripts ejecutables, el modelo entrenado y los resultados obtenidos.
+
+```text
+alzheimer-detection-oasis-cnn/
+│
+├── README.md
+├── requirements.txt
+├── .gitignore
+│
+├── notebook/
+│   └── Alzheimer_CNN.ipynb
+│
+├── src/
+│   ├── train.py
+│   └── predict.py
+│
+├── models/
+│   └── alzheimer_cnn.keras
+│
+└── results/
+    ├── training_curves.png
+    └── confusion_matrix.png
+```
+
+### `README.md`
+
+Documentación general del proyecto, incluyendo la metodología utilizada, arquitectura, resultados, limitaciones y forma de ejecución.
+
+### `requirements.txt`
+
+Lista de dependencias necesarias para ejecutar el proyecto.
+
+### `notebook/`
+
+Contiene el notebook utilizado durante el desarrollo y experimentación del modelo.
+
+El notebook permite observar de manera interactiva las diferentes etapas del proceso, desde la preparación de los datos hasta la evaluación de la CNN.
+
+### `src/`
+
+Contiene los scripts principales del proyecto:
+
+* `train.py`: carga y prepara los datos, construye y entrena la CNN y genera el modelo.
+* `predict.py`: carga el modelo previamente entrenado y realiza predicciones sobre nuevas imágenes.
+
+### `models/`
+
+Contiene el modelo entrenado guardado en formato `.keras`.
+
+### `results/`
+
+Contiene las principales visualizaciones generadas durante el entrenamiento y la evaluación del modelo.
+
 ---
 
 ## 12. Trabajo futuro
+
+El proyecto puede continuar desarrollándose en diferentes direcciones para ampliar el análisis y mejorar la capacidad de evaluación del modelo.
+
+Entre las posibles líneas de trabajo se encuentran:
+
+### Evaluación con datasets independientes
+
+Evaluar el modelo utilizando imágenes provenientes de un dataset diferente permitiría estudiar su comportamiento fuera de la distribución utilizada durante el entrenamiento.
+
+### Aumentación de datos
+
+Incorporar técnicas de `Data Augmentation` podría permitir generar variaciones de las imágenes de entrenamiento y estudiar su impacto sobre la capacidad de generalización del modelo.
+
+### Mayor cantidad de pacientes
+
+Utilizar un dataset con una cantidad mayor y más equilibrada de pacientes por categoría permitiría realizar evaluaciones más representativas, especialmente para las clases con pocos pacientes.
+
+### Comparación con otras arquitecturas
+
+Se podrían evaluar arquitecturas alternativas de CNN y modelos preentrenados mediante `Transfer Learning`, manteniendo la misma metodología de división por paciente para realizar comparaciones bajo condiciones equivalentes.
+
+### Optimización de hiperparámetros
+
+Otra posible extensión consiste en estudiar diferentes valores de:
+
+* Learning Rate.
+* Batch Size.
+* Número de filtros.
+* Número de capas.
+* Dropout.
+* Tamaño de las imágenes.
+* Parámetros de Early Stopping.
+
+### Análisis de interpretabilidad
+
+Se podrían incorporar técnicas de interpretabilidad, como mapas de activación o `Grad-CAM`, para analizar qué regiones de las imágenes tienen mayor influencia en las predicciones realizadas por la CNN.
+
+### Automatización del pipeline
+
+El proceso podría evolucionar hacia un pipeline completamente automatizado que incluya preparación de datos, entrenamiento, evaluación, generación de métricas y almacenamiento de resultados.
 
 ---
 
 ## 13. Conclusiones
 
+El proyecto permitió desarrollar un flujo completo de clasificación de imágenes MRI mediante una **Convolutional Neural Network**, utilizando el dataset OASIS como fuente de datos.
+
+Uno de los principales aspectos abordados fue la influencia de la estructura del dataset sobre la evaluación del modelo. La presencia de múltiples imágenes correspondientes a un mismo paciente hace que una división aleatoria basada únicamente en imágenes pueda producir una evaluación poco representativa.
+
+Por este motivo, el proyecto utiliza una **división a nivel de paciente**, manteniendo separados los pacientes utilizados para entrenamiento, validación y test cuando la cantidad disponible lo permite.
+
+También se abordó el fuerte desbalance existente entre las categorías mediante el uso de **Class Weights**, evitando depender únicamente de una Accuracy global para interpretar el comportamiento del modelo.
+
+La evaluación incorpora diferentes métricas, incluyendo Precision, Recall y F1-score, además de la matriz de confusión. Esto permite analizar el comportamiento del modelo de manera individual para cada categoría.
+
+Sin embargo, los resultados deben interpretarse considerando las limitaciones del dataset, especialmente la cantidad extremadamente reducida de pacientes pertenecientes a `Moderate Dementia`.
+
+En consecuencia, este proyecto no pretende presentar la CNN como una herramienta clínica, sino como una implementación experimental para estudiar **clasificación de imágenes mediante Deep Learning, preparación de datos, evaluación de modelos y problemas de generalización asociados a datasets médicos**.
+
 ---
 
 ## 14. Referencias
+
+### Dataset
+
+* **OASIS Alzheimer's Detection — Kaggle**
+  Dataset utilizado para el entrenamiento y evaluación del modelo:
+  https://www.kaggle.com/datasets/ninadaithal/imagesoasis/data
+
+### Tecnologías
+
+* **TensorFlow / Keras**
+  Framework utilizado para la construcción y entrenamiento de la CNN.
+
+* **scikit-learn**
+  Utilizado para diferentes tareas de procesamiento y evaluación, incluyendo el cálculo de `Class Weights` y las métricas de clasificación.
+
+* **NumPy**
+  Utilizado para la manipulación de los datos de las imágenes.
+
+* **Pillow**
+  Utilizado para la carga, conversión y redimensionamiento de las imágenes.
+
+* **Matplotlib / Seaborn**
+  Utilizados para la generación de las visualizaciones y la matriz de confusión.
+
+### Conceptos utilizados
+
+* Convolutional Neural Networks (CNN)
+* Image Classification
+* Deep Learning
+* Patient-level Data Splitting
+* Data Leakage
+* Class Weights
+* Early Stopping
+* Confusion Matrix
+* Precision, Recall y F1-score
+* Model Generalization
