@@ -1,6 +1,23 @@
 # Clasificación de imágenes MRI mediante CNN utilizando OASIS
 
 
+<div align="center">
+
+  <table>
+    <tr>
+      <td align="center">
+        <strong>🚧 Repositorio en proceso...</strong>
+        <br><br>
+        Este repositorio se encuentra actualmente en desarrollo.
+        Estoy subiendo los archivos y completando la documentación.
+        <br>
+      </td>
+    </tr>
+  </table>
+
+</div>
+
+
 ## 1. Descripción del proyecto
 
 Este proyecto implementa un modelo de **Deep Learning basado en una Convolutional Neural Network (CNN)** para clasificar imágenes de resonancia magnética cerebral en diferentes categorías relacionadas con la enfermedad de Alzheimer.
