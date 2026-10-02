@@ -1,3 +1,21 @@
+# Clasificación de imágenes MRI mediante CNN utilizando OASIS
+
+<div align="center">
+
+  <table>
+    <tr>
+      <td align="center">
+        <strong>🚧 Repositorio en proceso...</strong>
+        <br><br>
+        Este repositorio se encuentra actualmente en desarrollo.
+        Estoy subiendo los archivos y completando la documentación.
+        <br>
+      </td>
+    </tr>
+  </table>
+
+</div>
+
 ## 1. Descripción del proyecto
 
 Este proyecto implementa un modelo de **Deep Learning basado en una Convolutional Neural Network (CNN)** para clasificar imágenes de resonancia magnética cerebral en diferentes categorías relacionadas con la enfermedad de Alzheimer.
@@ -203,7 +221,24 @@ Para compensar el desbalance restante durante el entrenamiento se utilizan **Cla
 
 ---
 
-## 5. Arquitectura de la CNN
+## 5. Tecnologías utilizadas
+
+El proyecto utiliza las siguientes tecnologías y librerías principales:
+
+| Tecnología / Librería  | Uso                                                      |
+| ---------------------- | -------------------------------------------------------- |
+| **Python**             | Lenguaje principal del proyecto                          |
+| **TensorFlow / Keras** | Construcción, entrenamiento y evaluación de la CNN       |
+| **NumPy**              | Manipulación de imágenes y estructuras numéricas         |
+| **scikit-learn**       | División de datos, métricas y cálculo de `Class Weights` |
+| **Pillow**             | Carga, conversión y redimensionamiento de imágenes       |
+| **Matplotlib**         | Visualización de métricas y resultados                   |
+| **Seaborn**            | Visualización de la matriz de confusión                  |
+| **Jupyter Notebook**   | Experimentación y desarrollo inicial del modelo          |
+
+---
+
+## 6. Arquitectura de la CNN
 
 El modelo está implementado utilizando **TensorFlow/Keras**.
 
@@ -245,7 +280,7 @@ Los bloques convolucionales utilizan:
 
 La capa final contiene cuatro neuronas correspondientes a las cuatro categorías del dataset.
 
-### 5.1. Configuración del modelo
+### 6.1. Configuración del modelo
 
 | Parámetro          | Configuración                   |
 | ------------------ | ------------------------------- |
@@ -264,11 +299,11 @@ La arquitectura utiliza `BatchNormalization`, `MaxPooling2D` y `GlobalAveragePoo
 
 ---
 
-## 6. Entrenamiento
+## 7. Entrenamiento
 
 El modelo se entrena utilizando el conjunto `Train` y se supervisa mediante el conjunto `Validation`.
 
-### 6.1. Parámetros de entrenamiento
+### 7.1. Parámetros de entrenamiento
 
 | Parámetro            | Configuración                   |
 | -------------------- | ------------------------------- |
@@ -283,7 +318,7 @@ El modelo se entrena utilizando el conjunto `Train` y se supervisa mediante el c
 | Patience             | 5                               |
 | Restore best weights | Sí                              |
 
-### 6.2. Class Weights
+### 7.2. Class Weights
 
 Los pesos utilizados en la ejecución actual son:
 
@@ -298,7 +333,7 @@ Los pesos se calculan automáticamente a partir de la distribución de `y_train`
 
 La utilización de `Class Weights` permite mantener las imágenes disponibles de las clases minoritarias sin realizar duplicación artificial de imágenes.
 
-### 6.3. Early Stopping
+### 7.3. Early Stopping
 
 El entrenamiento utiliza:
 
@@ -316,7 +351,7 @@ Con `restore_best_weights=True`, se recuperan los pesos correspondientes a la me
 
 ---
 
-## 7. Resultados
+## 8. Resultados
 
 La evaluación final se realiza sobre el conjunto de `Test`, compuesto por pacientes separados previamente del entrenamiento.
 
@@ -329,7 +364,7 @@ Se utilizan:
 * F1-score.
 * Matriz de confusión.
 
-### 7.1. Curvas de entrenamiento
+### 8.1. Curvas de entrenamiento
 
 Durante el entrenamiento se registran las métricas de `Train` y `Validation`.
 
@@ -342,7 +377,7 @@ Las principales métricas observadas son:
 
 Las curvas permiten analizar la evolución del entrenamiento y detectar diferencias entre el comportamiento del modelo sobre `Train` y `Validation`.
 
-### 7.2. Evaluación en Test
+### 8.2. Evaluación en Test
 
 La evaluación final se realiza mediante:
 
@@ -360,7 +395,7 @@ Test Loss: [VALOR]
 Test Accuracy: [VALOR]
 ```
 
-### 7.3. Classification Report
+### 8.3. Classification Report
 
 El modelo genera un `Classification Report` para las cuatro categorías:
 
@@ -380,7 +415,7 @@ El reporte incluye:
 
 Los valores obtenidos en la ejecución final serán incorporados en esta sección.
 
-### 7.4. Matriz de Confusión
+### 8.4. Matriz de Confusión
 
 También se genera una matriz de confusión para analizar las predicciones realizadas sobre el conjunto de `Test`.
 
@@ -397,7 +432,7 @@ La matriz permite identificar las clases que presentan mayor cantidad de errores
 
 ---
 
-## 8. Análisis de resultados
+## 9. Análisis de resultados
 
 La ejecución actual muestra una diferencia importante entre el rendimiento obtenido sobre `Train` y `Validation`.
 
@@ -422,7 +457,7 @@ La interpretación de este resultado debe realizarse teniendo en cuenta las cara
 
 ---
 
-## 9. Limitaciones
+## 10. Limitaciones
 
 Los resultados obtenidos deben interpretarse dentro de las características del dataset utilizado.
 
@@ -449,11 +484,11 @@ El modelo no constituye una herramienta médica ni debe utilizarse para realizar
 
 ---
 
-## 10. Uso del proyecto
+## 11. Uso del proyecto
 
 El proyecto puede utilizarse para entrenar el modelo o realizar predicciones utilizando un modelo previamente entrenado.
 
-### 10.1. Instalación
+### 11.1. Instalación
 
 Clonar el repositorio:
 
@@ -480,21 +515,11 @@ Instalar las dependencias:
 pip install -r requirements.txt
 ```
 
-Principales tecnologías utilizadas:
-
-* Python
-* TensorFlow / Keras
-* NumPy
-* scikit-learn
-* Matplotlib
-* Seaborn
-* Pillow
-
 El dataset debe descargarse desde [OASIS Alzheimer's Detection en Kaggle](https://www.kaggle.com/datasets/ninadaithal/imagesoasis/data).
 
 El dataset no se incluye en el repositorio debido a su tamaño.
 
-### 10.2. Entrenamiento
+### 11.2. Entrenamiento
 
 El entrenamiento puede realizarse mediante:
 
@@ -517,7 +542,7 @@ El proceso incluye:
 11. Generación de resultados.
 12. Guardado del modelo.
 
-### 10.3. Predicción
+### 11.3. Predicción
 
 Una vez generado el modelo entrenado:
 
@@ -538,7 +563,7 @@ Moderate Dementia
 
 ---
 
-## 11. Estructura del proyecto
+## 12. Estructura del proyecto
 
 ```text
 alzheimer-detection-oasis-cnn/
@@ -591,7 +616,7 @@ Contiene las visualizaciones y resultados generados durante el entrenamiento y e
 
 ---
 
-## 12. Trabajo futuro
+## 13. Trabajo futuro
 
 Posibles líneas de desarrollo:
 
@@ -628,7 +653,7 @@ Integrar el modelo entrenado con una aplicación de escritorio desarrollada en *
 
 ---
 
-## 13. Conclusiones
+## 14. Conclusiones
 
 El proyecto implementa un flujo completo de clasificación de imágenes MRI mediante una **Convolutional Neural Network**, utilizando el dataset OASIS.
 
@@ -646,33 +671,17 @@ El proyecto tiene como finalidad demostrar el proceso de desarrollo y evaluació
 
 ---
 
-## 14. Referencias
+## 15. Referencias
 
 ### Dataset
 
 * **OASIS Alzheimer's Detection — Kaggle**
   https://www.kaggle.com/datasets/ninadaithal/imagesoasis/data
 
-### Tecnologías
+### Análisis de referencia del dataset
 
-* **TensorFlow / Keras**
-* **scikit-learn**
-* **NumPy**
-* **Pillow**
-* **Matplotlib**
-* **Seaborn**
+* **Final DL Project - Alzheimer's Detection — Kaggle**
+  https://www.kaggle.com/code/romyleferink/final-dl-project-alzheimer-s-detection
 
-### Conceptos utilizados
+Este trabajo fue utilizado como referencia para el análisis exploratorio y la comprensión de las características del dataset OASIS. La arquitectura y metodología del modelo desarrollado en este repositorio son independientes de dicho trabajo.
 
-* Convolutional Neural Networks (CNN)
-* Image Classification
-* Deep Learning
-* Patient-level Data Splitting
-* Data Leakage
-* Class Weights
-* Early Stopping
-* Confusion Matrix
-* Precision
-* Recall
-* F1-score
-* Model Generalization
