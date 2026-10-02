@@ -16,8 +16,6 @@
 
 </div>
 
-## 1. Descripción del proyecto
-
 Este proyecto implementa un modelo de **Deep Learning basado en una Convolutional Neural Network (CNN)** para clasificar imágenes de resonancia magnética cerebral en diferentes categorías relacionadas con la enfermedad de Alzheimer.
 
 Para el desarrollo se utiliza el dataset [OASIS Alzheimer’s Detection](https://www.kaggle.com/datasets/ninadaithal/imagesoasis/data), disponible públicamente en Kaggle.
@@ -28,7 +26,52 @@ Además del desarrollo de la CNN, se presta especial atención a la metodología
 
 ---
 
-## 2. Objetivo
+## Índice
+
+1. [Objetivo](#1-objetivo)
+2. [Dataset](#2-dataset)
+
+   * [2.1. OASIS Alzheimer’s Detection](#21-oasis-alzheimers-detection)
+   * [2.2. Características de las imágenes](#22-características-de-las-imágenes)
+   * [2.3. Distribución de pacientes](#23-distribución-de-pacientes)
+   * [2.4. Limitaciones del dataset](#24-limitaciones-del-dataset)
+3. [Preparación de los datos](#3-preparación-de-los-datos)
+
+   * [3.1. Preprocesamiento de imágenes](#31-preprocesamiento-de-imágenes)
+   * [3.2. División por paciente](#32-división-por-paciente)
+   * [3.3. Train, Validation y Test](#33-train-validation-y-test)
+   * [3.4. Control de Data Leakage](#34-control-de-data-leakage)
+   * [3.5. Desbalance de clases](#35-desbalance-de-clases)
+4. [Tecnologías utilizadas](#4-tecnologías-utilizadas)
+5. [Arquitectura de la CNN](#5-arquitectura-de-la-cnn)
+
+   * [5.1. Configuración del modelo](#51-configuración-del-modelo)
+6. [Entrenamiento](#6-entrenamiento)
+
+   * [6.1. Parámetros de entrenamiento](#61-parámetros-de-entrenamiento)
+   * [6.2. Class Weights](#62-class-weights)
+   * [6.3. Early Stopping](#63-early-stopping)
+7. [Resultados](#7-resultados)
+
+   * [7.1. Curvas de entrenamiento](#71-curvas-de-entrenamiento)
+   * [7.2. Evaluación en Test](#72-evaluación-en-test)
+   * [7.3. Classification Report](#73-classification-report)
+   * [7.4. Matriz de Confusión](#74-matriz-de-confusión)
+8. [Análisis de resultados](#8-análisis-de-resultados)
+9. [Limitaciones](#9-limitaciones)
+10. [Uso del proyecto](#10-uso-del-proyecto)
+
+    * [10.1. Instalación](#101-instalación)
+    * [10.2. Entrenamiento](#102-entrenamiento)
+    * [10.3. Predicción](#103-predicción)
+11. [Estructura del proyecto](#11-estructura-del-proyecto)
+12. [Trabajo futuro](#12-trabajo-futuro)
+13. [Conclusiones](#13-conclusiones)
+14. [Referencias](#14-referencias)
+
+---
+
+## 1. Objetivo
 
 El objetivo principal es desarrollar y evaluar una CNN capaz de clasificar imágenes MRI en cuatro categorías:
 
@@ -43,9 +86,9 @@ Para reducir el riesgo de `Data Leakage`, la división de los datos se realiza a
 
 ---
 
-## 3. Dataset
+## 2. Dataset
 
-### 3.1. OASIS Alzheimer’s Detection
+### 2.1. OASIS Alzheimer’s Detection
 
 El dataset utilizado es [OASIS Alzheimer’s Detection](https://www.kaggle.com/datasets/ninadaithal/imagesoasis/data), disponible en Kaggle y basado en imágenes de resonancia magnética cerebral.
 
@@ -61,7 +104,7 @@ El conjunto utilizado contiene aproximadamente **86.437 imágenes**, distribuida
 
 La distribución presenta diferencias importantes tanto en la cantidad de imágenes como en la cantidad de pacientes disponibles para cada categoría.
 
-### 3.2. Características de las imágenes
+### 2.2. Características de las imágenes
 
 Las imágenes originales utilizadas por el dataset tienen una resolución de **496 × 248 píxeles**.
 
@@ -78,7 +121,7 @@ La entrada utilizada por la CNN tiene una dimensión de:
 128 × 128 × 3
 ```
 
-### 3.3. Distribución de pacientes
+### 2.3. Distribución de pacientes
 
 Una característica importante del dataset es que un mismo paciente puede aportar cientos de imágenes.
 
@@ -93,7 +136,7 @@ Por lo tanto, la cantidad de imágenes disponibles no representa directamente la
 
 Esta diferencia es especialmente relevante para `Moderate Dementia`, donde las 488 imágenes pertenecen únicamente a dos pacientes.
 
-### 3.4. Limitaciones del dataset
+### 2.4. Limitaciones del dataset
 
 Las principales características que afectan al proyecto son:
 
@@ -107,11 +150,11 @@ Estas características son consideradas durante la preparación y evaluación de
 
 ---
 
-## 4. Preparación de los datos
+## 3. Preparación de los datos
 
 La preparación de los datos contempla el preprocesamiento de las imágenes, la identificación de pacientes, la división de los conjuntos y el tratamiento del desbalance entre las clases.
 
-### 4.1. Preprocesamiento de imágenes
+### 3.1. Preprocesamiento de imágenes
 
 Las imágenes son procesadas mediante:
 
@@ -131,7 +174,7 @@ La entrada final utilizada por la CNN es:
 128 × 128 × 3
 ```
 
-### 4.2. División por paciente
+### 3.2. División por paciente
 
 La división de los datos se realiza **a nivel de paciente y no a nivel de imagen**.
 
@@ -145,7 +188,7 @@ En este caso, `0028` corresponde al identificador utilizado para agrupar las im�
 
 Las imágenes son agrupadas por paciente antes de realizar las divisiones de `Train`, `Validation` y `Test`.
 
-### 4.3. Train, Validation y Test
+### 3.3. Train, Validation y Test
 
 Para `Non Demented`, `Very mild Dementia` y `Mild Dementia` se utiliza:
 
@@ -177,7 +220,7 @@ Debido a esta limitación, se utiliza:
 
 Esta limitación debe considerarse al interpretar los resultados obtenidos para esta categoría.
 
-### 4.4. Control de Data Leakage
+### 3.4. Control de Data Leakage
 
 Después de realizar las divisiones se comprueba que:
 
@@ -188,7 +231,7 @@ Después de realizar las divisiones se comprueba que:
 
 Estas comprobaciones permiten detectar posibles solapamientos antes de utilizar los datos para el entrenamiento.
 
-### 4.5. Desbalance de clases
+### 3.5. Desbalance de clases
 
 La distribución original presenta un fuerte desbalance:
 
@@ -221,7 +264,7 @@ Para compensar el desbalance restante durante el entrenamiento se utilizan **Cla
 
 ---
 
-## 5. Tecnologías utilizadas
+## 4. Tecnologías utilizadas
 
 El proyecto utiliza las siguientes tecnologías y librerías principales:
 
@@ -238,7 +281,7 @@ El proyecto utiliza las siguientes tecnologías y librerías principales:
 
 ---
 
-## 6. Arquitectura de la CNN
+## 5. Arquitectura de la CNN
 
 El modelo está implementado utilizando **TensorFlow/Keras**.
 
@@ -280,7 +323,7 @@ Los bloques convolucionales utilizan:
 
 La capa final contiene cuatro neuronas correspondientes a las cuatro categorías del dataset.
 
-### 6.1. Configuración del modelo
+### 5.1. Configuración del modelo
 
 | Parámetro          | Configuración                   |
 | ------------------ | ------------------------------- |
@@ -299,11 +342,11 @@ La arquitectura utiliza `BatchNormalization`, `MaxPooling2D` y `GlobalAveragePoo
 
 ---
 
-## 7. Entrenamiento
+## 6. Entrenamiento
 
 El modelo se entrena utilizando el conjunto `Train` y se supervisa mediante el conjunto `Validation`.
 
-### 7.1. Parámetros de entrenamiento
+### 6.1. Parámetros de entrenamiento
 
 | Parámetro            | Configuración                   |
 | -------------------- | ------------------------------- |
@@ -318,7 +361,7 @@ El modelo se entrena utilizando el conjunto `Train` y se supervisa mediante el c
 | Patience             | 5                               |
 | Restore best weights | Sí                              |
 
-### 7.2. Class Weights
+### 6.2. Class Weights
 
 Los pesos utilizados en la ejecución actual son:
 
@@ -333,7 +376,7 @@ Los pesos se calculan automáticamente a partir de la distribución de `y_train`
 
 La utilización de `Class Weights` permite mantener las imágenes disponibles de las clases minoritarias sin realizar duplicación artificial de imágenes.
 
-### 7.3. Early Stopping
+### 6.3. Early Stopping
 
 El entrenamiento utiliza:
 
@@ -351,7 +394,7 @@ Con `restore_best_weights=True`, se recuperan los pesos correspondientes a la me
 
 ---
 
-## 8. Resultados
+## 7. Resultados
 
 La evaluación final se realiza sobre el conjunto de `Test`, compuesto por pacientes separados previamente del entrenamiento.
 
@@ -364,7 +407,7 @@ Se utilizan:
 * F1-score.
 * Matriz de confusión.
 
-### 8.1. Curvas de entrenamiento
+### 7.1. Curvas de entrenamiento
 
 Durante el entrenamiento se registran las métricas de `Train` y `Validation`.
 
@@ -377,7 +420,7 @@ Las principales métricas observadas son:
 
 Las curvas permiten analizar la evolución del entrenamiento y detectar diferencias entre el comportamiento del modelo sobre `Train` y `Validation`.
 
-### 8.2. Evaluación en Test
+### 7.2. Evaluación en Test
 
 La evaluación final se realiza mediante:
 
@@ -395,7 +438,7 @@ Test Loss: [VALOR]
 Test Accuracy: [VALOR]
 ```
 
-### 8.3. Classification Report
+### 7.3. Classification Report
 
 El modelo genera un `Classification Report` para las cuatro categorías:
 
@@ -415,7 +458,7 @@ El reporte incluye:
 
 Los valores obtenidos en la ejecución final serán incorporados en esta sección.
 
-### 8.4. Matriz de Confusión
+### 7.4. Matriz de Confusión
 
 También se genera una matriz de confusión para analizar las predicciones realizadas sobre el conjunto de `Test`.
 
@@ -432,7 +475,7 @@ La matriz permite identificar las clases que presentan mayor cantidad de errores
 
 ---
 
-## 9. Análisis de resultados
+## 8. Análisis de resultados
 
 La ejecución actual muestra una diferencia importante entre el rendimiento obtenido sobre `Train` y `Validation`.
 
@@ -457,7 +500,7 @@ La interpretación de este resultado debe realizarse teniendo en cuenta las cara
 
 ---
 
-## 10. Limitaciones
+## 9. Limitaciones
 
 Los resultados obtenidos deben interpretarse dentro de las características del dataset utilizado.
 
@@ -484,11 +527,11 @@ El modelo no constituye una herramienta médica ni debe utilizarse para realizar
 
 ---
 
-## 11. Uso del proyecto
+## 10. Uso del proyecto
 
 El proyecto puede utilizarse para entrenar el modelo o realizar predicciones utilizando un modelo previamente entrenado.
 
-### 11.1. Instalación
+### 10.1. Instalación
 
 Clonar el repositorio:
 
@@ -519,7 +562,7 @@ El dataset debe descargarse desde [OASIS Alzheimer's Detection en Kaggle](https:
 
 El dataset no se incluye en el repositorio debido a su tamaño.
 
-### 11.2. Entrenamiento
+### 10.2. Entrenamiento
 
 El entrenamiento puede realizarse mediante:
 
@@ -542,7 +585,7 @@ El proceso incluye:
 11. Generación de resultados.
 12. Guardado del modelo.
 
-### 11.3. Predicción
+### 10.3. Predicción
 
 Una vez generado el modelo entrenado:
 
@@ -563,7 +606,7 @@ Moderate Dementia
 
 ---
 
-## 12. Estructura del proyecto
+## 11. Estructura del proyecto
 
 ```text
 alzheimer-detection-oasis-cnn/
@@ -616,7 +659,7 @@ Contiene las visualizaciones y resultados generados durante el entrenamiento y e
 
 ---
 
-## 13. Trabajo futuro
+## 12. Trabajo futuro
 
 Posibles líneas de desarrollo:
 
@@ -653,7 +696,7 @@ Integrar el modelo entrenado con una aplicación de escritorio desarrollada en *
 
 ---
 
-## 14. Conclusiones
+## 13. Conclusiones
 
 El proyecto implementa un flujo completo de clasificación de imágenes MRI mediante una **Convolutional Neural Network**, utilizando el dataset OASIS.
 
@@ -671,7 +714,7 @@ El proyecto tiene como finalidad demostrar el proceso de desarrollo y evaluació
 
 ---
 
-## 15. Referencias
+## 14. Referencias
 
 ### Dataset
 
@@ -684,4 +727,3 @@ El proyecto tiene como finalidad demostrar el proceso de desarrollo y evaluació
   https://www.kaggle.com/code/romyleferink/final-dl-project-alzheimer-s-detection
 
 Este trabajo fue utilizado como referencia para el análisis exploratorio y la comprensión de las características del dataset OASIS. La arquitectura y metodología del modelo desarrollado en este repositorio son independientes de dicho trabajo.
-
